@@ -124,6 +124,58 @@ class FTP_Implicit_SSL {
 	}
 
 	/**
+	* @return array of file names
+	* @throws Exception
+	*/
+	public function ftpfilelist(){
+		if ( ! curl_setopt( $this->curl_handle, CURLOPT_URL, $this->url))
+		throw new Exception ("Could not set cURL directory: $this->url");
+		curl_setopt( $this->curl_handle, CURLOPT_UPLOAD, false);
+		curl_setopt( $this->curl_handle,CURLOPT_FTPLISTONLY,1);
+		curl_setopt( $this->curl_handle, CURLOPT_RETURNTRANSFER, 1);
+		$result = curl_exec( $this->curl_handle ) or die ( curl_error( $this->curl_handle ));
+		$files = explode("\n",trim($result));
+		if( count($files) ){
+			return $files;
+		} else {
+			return array();
+		}
+	}
+	/**
+	* Download remote file to the given location
+	*/
+	public function download($file_name,$local_path='/'){
+		$file = fopen("$local_path$file_name", "w");
+		curl_setopt( $this->curl_handle, CURLOPT_URL, $this->url . $file_name);
+		curl_setopt( $this->curl_handle, CURLOPT_UPLOAD, false);
+		curl_setopt( $this->curl_handle, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt( $this->curl_handle, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt( $this->curl_handle, CURLOPT_FILE, $file);
+		$result = curl_exec($this->curl_handle);
+		fclose($file);
+		if( strlen($result) ){
+			return $result;
+		} else {
+			return "";
+		}
+	}
+	/**
+	* Get remote file size
+	* This will help to create a progress bar
+	*/
+	public function remote_file_size($file_name){
+		$size=0;
+		curl_setopt( $this->curl_handle, CURLOPT_URL, $this->url . $file_name);
+		curl_setopt( $this->curl_handle, CURLOPT_UPLOAD, false);
+		curl_setopt( $this->curl_handle, CURLOPT_RETURNTRANSFER, TRUE);
+		curl_setopt( $this->curl_handle, CURLOPT_HEADER, TRUE);
+		curl_setopt( $this->curl_handle, CURLOPT_NOBODY, TRUE);
+		$data = curl_exec( $this->curl_handle);
+		$size = curl_getinfo( $this->curl_handle, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+		return $size;
+	} 
+
+	/**
 	 * Attempt to close cURL handle
 	 * Note - errors suppressed here as they are not useful
 	 *
