@@ -5,8 +5,8 @@
  * Simple wrapper for cURL functions to transfer an ASCII file over FTP with implicit SSL/TLS
  *
  * @category    Class
- * @author      Max Rice
- * @since       1.0
+ * @author      Max Rice / Damith Jayasinghe
+ * @since       1.4
  */
 
 class FTP_Implicit_SSL {
